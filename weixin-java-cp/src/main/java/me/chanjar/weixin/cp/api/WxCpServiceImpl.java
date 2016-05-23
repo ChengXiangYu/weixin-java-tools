@@ -252,7 +252,35 @@ public class WxCpServiceImpl implements WxCpService {
     return execute(new MediaDownloadRequestExecutor(wxCpConfigStorage.getTmpDirFile()), url, "media_id=" + media_id);
   }
 
+  @Override
+  public WxMediaUploadResult mediaPerUpload(String agent_id, String mediaType,
+  		String fileType, InputStream inputStream) throws WxErrorException,
+  		IOException {
+  	return mediaPerUpload(agent_id, mediaType, FileUtils.createTmpFile(inputStream, UUID.randomUUID().toString(), fileType));
+  }
 
+  @Override
+  public WxMediaUploadResult mediaPerUpload(String agent_id, String mediaType,
+  		File file) throws WxErrorException {
+	  String url="https://qyapi.weixin.qq.com/cgi-bin/material/add_material?agentid="+agent_id+"&type="+mediaType;
+	  return execute(new MediaUploadRequestExecutor(), url, file);
+  }
+
+  @Override
+  public File mediaPerDownload(String agent_id, String media_id)
+  		throws WxErrorException {
+	  	String url = "https://qyapi.weixin.qq.com/cgi-bin/material/get";
+	    return execute(new MediaDownloadRequestExecutor(wxCpConfigStorage.getTmpDirFile()), url, "media_id=" + media_id+"&agentid="+agent_id);
+  }
+  
+  @Override
+  public WxError mediaPerDel(String agent_id, String media_id)
+  		throws WxErrorException, ClientProtocolException, IOException {
+	  String url="https://qyapi.weixin.qq.com/cgi-bin/material/del";
+	  CloseableHttpClient client=HttpClients.createDefault();
+	  return WxError.fromJson(new SimpleGetRequestExecutor().execute(getHttpclient(), httpProxy, url, "agentid="+agent_id+"&media_id="+media_id));
+  }
+  
   public Integer departCreate(WxCpDepart depart) throws WxErrorException {
     String url = "https://qyapi.weixin.qq.com/cgi-bin/department/create";
     String responseContent = execute(
@@ -693,4 +721,8 @@ public class WxCpServiceImpl implements WxCpService {
     System.out.println(a.toString());
     System.out.println(a.doubleValue());
   }
+
+
+
+
 }

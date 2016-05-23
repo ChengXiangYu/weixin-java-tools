@@ -2,6 +2,7 @@ package me.chanjar.weixin.cp.api;
 
 import me.chanjar.weixin.common.bean.WxJsapiSignature;
 import me.chanjar.weixin.common.bean.WxMenu;
+import me.chanjar.weixin.common.bean.result.WxError;
 import me.chanjar.weixin.common.bean.result.WxMediaUploadResult;
 import me.chanjar.weixin.common.exception.WxErrorException;
 import me.chanjar.weixin.common.session.WxSession;
@@ -9,13 +10,17 @@ import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.common.util.http.RequestExecutor;
 import me.chanjar.weixin.cp.bean.WxCpDepart;
 import me.chanjar.weixin.cp.bean.WxCpMessage;
+import me.chanjar.weixin.cp.bean.WxCpMessage.WxArticle;
 import me.chanjar.weixin.cp.bean.WxCpTag;
 import me.chanjar.weixin.cp.bean.WxCpUser;
+import me.chanjar.weixin.cp.bean.messagebuilder.NewsBuilder;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+
+import org.apache.http.client.ClientProtocolException;
 
 /**
  * 微信API的Service
@@ -139,7 +144,51 @@ public interface WxCpService {
    * @params media_id
    */
   File mediaDownload(String media_id) throws WxErrorException;
-
+  
+  /**
+   * <pre>
+   * 上传永久素材文件
+   *   图片(image):
+   *   语音(voice):
+   *   视频(video):
+   *   普通文件(file):
+   * 详情请见: http://qydev.weixin.qq.com/wiki/index.php?title=%E4%B8%8A%E4%BC%A0%E6%B0%B8%E4%B9%85%E7%B4%A0%E6%9D%90
+   * </pre>
+   *
+   * @param agent_id 	企业应用ID
+   * @param mediaType   媒体类型, 请看{@link me.chanjar.weixin.common.api.WxConsts}
+   * @param fileType    文件类型，请看{@link me.chanjar.weixin.common.api.WxConsts}
+   * @param inputStream 输入流
+   * @throws WxErrorException
+   */
+  WxMediaUploadResult mediaPerUpload(String agent_id,String mediaType, String fileType, InputStream inputStream)
+      throws WxErrorException, IOException;
+  
+  /**
+   * @param agent_id
+   * @param mediaType
+   * @param file
+   * @throws WxErrorException
+   * @see #mediaUpload(String, String, InputStream)
+   */
+  WxMediaUploadResult mediaPerUpload(String agent_id,String mediaType, File file) throws WxErrorException;
+  
+  /**
+   * <pre>
+   * 下载多媒体文件
+   * 根据微信文档，视频文件下载不了，会返回null
+   * 详情请见: http://mp.weixin.qq.com/wiki/index.php?title=上传下载多媒体文件
+   * </pre>
+   *
+   * @return 保存到本地的临时文件
+   * @throws WxErrorException
+   * @params agent_id
+   * @params media_id
+   */
+  File mediaPerDownload(String agent_id,String media_id) throws WxErrorException;
+  
+  WxError mediaPerDel(String agent_id,String media_id) throws WxErrorException, ClientProtocolException, IOException;
+  
   /**
    * <pre>
    * 发送消息
